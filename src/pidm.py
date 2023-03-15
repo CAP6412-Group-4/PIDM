@@ -62,6 +62,8 @@ def main(image_path: str) -> int:
         download_dataset()
         
         predictor = Predictor()
+        
+        predictor.predict_pose(image=image_path, sample_algorithm="ddim", num_poses=4, nsteps=50)
     except Exception as ex:
         exit_code = 1
         logger.exception(ex)
