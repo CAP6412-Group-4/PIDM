@@ -14,6 +14,12 @@
 
 # Getting Started
 
+For Newton, make sure you have Python 3.8 installed:
+
+```bash
+module load python/python-3.8.0-gcc-9.1.0
+```
+
 Set up and activate virtual environment
 
 ```bash
@@ -21,12 +27,21 @@ python3 -m venv ./venv
 source venv/bin/activate
 ```
 
-Install dependencies:
+Upgrade pip and install the dependencies:
 
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 pip install --upgrade --no-cache-dir gdown tensorfn
 ```
+
+Run the main script like so:
+
+```bash
+python3 src/pidm.py
+```
+
+-   NOTE: Make you have a cuda environment setup in order to run this.
 
 # News
 
