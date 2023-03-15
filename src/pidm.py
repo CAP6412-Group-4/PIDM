@@ -1,17 +1,20 @@
 """Main script for running the pose generator"""
 
+import glob
+
 import sys
 import os
 import argparse
 import logging
 from pathlib import Path
 
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+
 # NOTE: Going to set the paths in here before importing packages. 
 # NOTE: This is important for importing packages.
 sys.path.append(str(Path().parent))
 
 from src.predict import Predictor
-from IPython.display import Image
 
 from src import paths
 from src.log.log import initialize_logger
