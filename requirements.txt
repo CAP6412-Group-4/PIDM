@@ -1,3 +1,4 @@
 torchvision
 notebook
 opencv-python
+numpy
