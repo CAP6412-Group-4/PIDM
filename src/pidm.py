@@ -26,13 +26,29 @@ ZIP_FILE = paths.BASE_DIR / "checkpoints_data.zip"
 
 def download_dataset() -> None:
     """"""
-    if not (paths.BASE_DIR.is_dir() and paths.CHECKPOINTS_DIR.is_dir()):
+    if not (paths.DATA_DIR.is_dir() and paths.CHECKPOINTS_DIR.is_dir()):
+        if paths.DATA_DIR.is_dir():
+            paths.DATA_DIR.unlink()
+            
+        if paths.CHECKPOINTS_DIR.is_dir():
+            paths.CHECKPOINTS_DIR.unlink()
+            
         os.system(f"gdown --fuzzy {DATASET_URL} && unzip ./checkpoints_data.zip")
         
     if ZIP_FILE.is_file():
         ZIP_FILE.unlink()
 
+
 def main(image_path: str) -> int:
+    """
+    Main script for running the pose generator
+
+    Args:
+        image_path (str): Image to use for pose generation.
+
+    Returns:
+        int: Exit code
+    """
     
     exit_code = 0
     

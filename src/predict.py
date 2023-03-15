@@ -26,7 +26,6 @@ LAST_PT_FILE_PATH = paths.CHECKPOINTS_DIR / "last.pt"
 NPY_FILES = paths.TARGET_POSE / "*.npy"
 
 
-
 def get_conf():
 
     return BeatGANsAutoencConfig(image_size=256, 
