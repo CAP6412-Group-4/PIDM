@@ -152,6 +152,8 @@ class Predictor():
         logger.info("pose_grid: { shape: %s, range: [%s, %s] }", 
                      pose_grid.shape, pose_grid.min(), pose_grid.max())
         
+        logger.debug("1 - pose_grid = %s", (1 - pose_grid))
+        
         output: Tensor = torch.cat([1-pose_grid, samples_grid], -2)
         numpy_imgs: np.ndarray = output.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()
         fake_imgs: np.ndarray = (255*numpy_imgs).astype(np.uint8)
