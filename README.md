@@ -41,7 +41,7 @@ Run the main script like so:
 python3 src/pidm.py
 ```
 
--   NOTE: Make you have a cuda environment setup in order to run this.
+**NOTE:** Installing dependencies and running the program for the first may take a while.
 
 # News
 
