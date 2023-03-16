@@ -152,6 +152,7 @@ class Predictor():
         logger.info("pose_grid: { shape: %s, range: [%s, %s] }", 
                      pose_grid.shape, pose_grid.min(), pose_grid.max())
         
+        logger.debug("pose_grid values: %s", pose_grid)
         logger.debug("1 - pose_grid = %s", (1 - pose_grid))
         
         output: Tensor = torch.cat([1-pose_grid, samples_grid], -2)
