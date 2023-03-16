@@ -166,7 +166,7 @@ class Predictor():
         
         logger.info("Generating Output Image with fake_imgs[0]: { shape: %s, range: [%s, %s] }", 
                     fake_imgs.shape[1:], fake_imgs.min(), fake_imgs.max())
-        logger.debug("Output Image: %s", output)
+        logger.info("Output Image: %s", output_image)
         
         logger.info("Saving output image: 'output.png'")
         output_image.save('output.png')
