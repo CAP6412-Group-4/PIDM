@@ -1,6 +1,7 @@
 # Prediction interface for Cog ⚙️
 # https://github.com/replicate/cog/blob/main/docs/python.md
 
+import logging
 import warnings
 warnings.filterwarnings('ignore')
 import torch
@@ -19,6 +20,8 @@ import torchvision.transforms as transforms
 import torchvision
 
 from src import paths
+
+logger = logging.getLogger(__name__)
 
 CONFIG_DIR = paths.BASE_DIR / "config"
 FASHION_CONF = CONFIG_DIR / "fashion.conf"
@@ -64,11 +67,16 @@ def get_conf():
 class Predictor():
     def __init__(self):
         """Load the model into memory to make running multiple predictions efficient"""
+        
+        logger.info("Loading DiffusionConfig from: %s", FASHION_CONF)
         #opt = Config('./config/fashion_256.yaml')
         conf = load_config(DiffusionConfig, str(FASHION_CONF), show=False)
         #val_dataset, train_dataset = deepfashion_data.get_train_val_dataloader(opt.data, labels_required = True, distributed=False)
+        logger.debug("Loaded DiffusionConfig: %s", conf)
 
+        logger.info("Loading all tensors from '%s'", LAST_PT_FILE_PATH)
         ckpt = torch.load(str(LAST_PT_FILE_PATH))
+        
         self.model = get_conf().make_model()
         self.model.load_state_dict(ckpt["ema"])
         self.model = self.model.cuda()
@@ -78,31 +86,51 @@ class Predictor():
         self.diffusion = create_gaussian_diffusion(self.betas, predict_xstart = False)#.to(device)
         
         self.pose_list = glob.glob(str(NPY_FILES))
+        
+        logger.debug("pose_list: %s", self.pose_list)
+        
         self.transforms = transforms.Compose([transforms.Resize((256,256), interpolation=Image.BICUBIC),
                             transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5),
                                                 (0.5, 0.5, 0.5))])
-    def predict_pose(
-        self,
-        image,
-        num_poses=1,
-        sample_algorithm='ddim',
-        nsteps=100,
+        
+        
+    def predict_pose(self, 
+                     image: str, 
+                     num_poses: int = 1, 
+                     sample_algorithm: str = "ddim", 
+                     nsteps: int = 100):
+        """
+        Run a single prediction on the model
 
-        ):
-        """Run a single prediction on the model"""
+        Args:
+            image (str): Path to the input image.
+            num_poses (int, optional): Number of different poses to output. Defaults to 1.
+            sample_algorithm (str, optional): _description_. Defaults to "ddim".
+            nsteps (int, optional): _description_. Defaults to 100.
+        """
 
+        logger.debug("predict_pose(image=%s, num_poses=%s, sample_algorithm=%s, nsteps=%s)",
+                     image, num_poses, sample_algorithm, nsteps)
+        logger.info("Predicting %s poses for the image '%s' with the '%s' sample algorithm", 
+                    num_poses, image, sample_algorithm)
+
+        # Read the input image.
         src = Image.open(image)
         src = self.transforms(src).unsqueeze(0).cuda()
-        tgt_pose = torch.stack([transforms.ToTensor()(np.load(ps)).cuda() for ps in np.random.choice(self.pose_list, num_poses)], 0)
+        tgt_pose = torch.stack(
+            [transforms.ToTensor()(np.load(ps)).cuda() 
+             for ps in np.random.choice(self.pose_list, num_poses)], 
+            0
+        )
+        
+        logger.debug("src: %s", src)
+        logger.debug("tgt_pose: %s", tgt_pose)
 
         src = src.repeat(num_poses,1,1,1)
 
-
-
-
-        if sample_algorithm == 'ddpm':
+        if sample_algorithm == "ddpm":
             samples = self.diffusion.p_sample_loop(self.model, x_cond = [src, tgt_pose], progress = True, cond_scale = 2)
-        elif sample_algorithm == 'ddim':
+        elif sample_algorithm == "ddim":
             noise = torch.randn(src.shape).cuda()
             seq = range(0, 1000, 1000//nsteps)
             xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src, tgt_pose])

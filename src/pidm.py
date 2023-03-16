@@ -28,8 +28,10 @@ ZIP_FILE = paths.BASE_DIR / "checkpoints_data.zip"
 
 
 def download_dataset() -> None:
-    """"""
+    """Downloads the zip file from the google drive."""
     if not (paths.DATA_DIR.is_dir() and paths.CHECKPOINTS_DIR.is_dir()):
+        logger.info("Downloading dataset from Google Drive: %s", DATASET_URL)
+        
         if paths.DATA_DIR.is_dir():
             paths.DATA_DIR.unlink()
             
@@ -42,12 +44,13 @@ def download_dataset() -> None:
         ZIP_FILE.unlink()
 
 
-def main(image_path: str) -> int:
+def main(image_path: str, debug: bool = False) -> int:
     """
     Main script for running the pose generator
 
     Args:
         image_path (str): Image to use for pose generation.
+        debug: Flag for displaying debug logs
 
     Returns:
         int: Exit code
@@ -56,7 +59,7 @@ def main(image_path: str) -> int:
     exit_code = 0
     
     try:
-        initialize_logger(log_path=PIDM_LOG_PATH)
+        initialize_logger(log_path=PIDM_LOG_PATH, debug=debug)
         logger.info("Start of PIDM pose generation")
         
         download_dataset()
@@ -78,7 +81,10 @@ if __name__ == "__main__":
     
     parser.add_argument("-i", "--image-path", required=False, default=str(PERSON_JPEG_PATH),
                         help="Path to image to use for pose generation.")
+    parser.add_argument("-d", "--debug", required=False, default=False, action="store_true",
+                        help="Flag for also displaying DEBUG logs. "
+                        "This would output more detailed logs.")
     
     args, _ = parser.parse_known_args()
     
-    sys.exit(main(image_path=args.image_path))
+    sys.exit(main(image_path=args.image_path, debug=args.debug))
