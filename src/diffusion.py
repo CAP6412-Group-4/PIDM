@@ -70,7 +70,7 @@ def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
             #xs.append(xt_next.to('cpu'))
 
     logger.info("Returning DDIM results...")
-    logger.info("xt: %s", xt)
+    logger.info("xt: { shape: %s, range: [%s, %s]}", xt.shape, xt.min(), xt.max())
     logger.info("x0_preds: %s", x0_preds)
     
     return [xt], x0_preds
