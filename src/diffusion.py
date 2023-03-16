@@ -4,6 +4,7 @@ https://github.com/hojonathanho/diffusion/blob/1e0dceb3b3495bbe19116a5e1b3596cd0
 Docstrings have been added, as well as DDIM sampling and a new collection of beta schedules.
 """
 
+import logging
 import enum
 import math
 
@@ -16,6 +17,9 @@ from types import *
 
 import torch
 import tqdm
+
+logger = logging.getLogger(__name__)
+
 
 def compute_alpha(beta, t):
     beta = torch.cat([torch.zeros(1).to(beta.device), beta], dim=0)
@@ -501,6 +505,9 @@ class GaussianDiffusion:
         :param progress: if True, show a tqdm progress bar.
         :return: a non-differentiable batch of samples.
         """
+        
+        logger.info("Generating samples from the model...")
+        
         shape = x_cond[0].shape
         final = None
         x_cond[0] = [model.encode(x_cond[0])['cond'], model.encode(torch.zeros_like(x_cond[0]))['cond']]
