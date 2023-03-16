@@ -6,6 +6,7 @@ import warnings
 warnings.filterwarnings('ignore')
 import torch
 import torch.nn as nn
+from torch import Tensor
 from tqdm import tqdm
 from torchvision.utils import save_image
 from PIL import Image
@@ -116,7 +117,7 @@ class Predictor():
 
         # Read the input image.
         src = Image.open(image)
-        src = self.transforms(src).unsqueeze(0).cuda()
+        src_tensor: Tensor = self.transforms(src).unsqueeze(0).cuda()
         
         # Randomly selects a number of poses from the pose_list. 
         # The amount of poses selected is determined by the 'num_poses'
@@ -129,31 +130,37 @@ class Predictor():
         logger.info("Target Poses: { shape: %s, range: [%s, %s] }", 
                     tgt_pose.shape, tgt_pose.min(), tgt_pose.max())
         
-        src = src.repeat(num_poses, 1, 1, 1)
-        logger.debug("src: %s", src)
+        src_tensor = src_tensor.repeat(num_poses, 1, 1, 1)
+        logger.info("Source Tensor: { shape: %s, range: [%s, %s] }", 
+                     src_tensor.shape, src_tensor.min(), src_tensor.max())
 
         if sample_algorithm == "ddpm":
-            samples = self.diffusion.p_sample_loop(self.model, x_cond = [src, tgt_pose], progress = True, cond_scale = 2)
+            samples = self.diffusion.p_sample_loop(self.model, x_cond = [src_tensor, tgt_pose], progress = True, cond_scale = 2)
         elif sample_algorithm == "ddim":
-            noise = torch.randn(src.shape).cuda()
+            noise = torch.randn(src_tensor.shape).cuda()
             seq = range(0, 1000, 1000//nsteps)
-            xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src, tgt_pose])
+            xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src_tensor, tgt_pose])
             samples = xs[-1].cuda()
 
-        samples_grid = torch.cat([src[0],torch.cat([samps for samps in samples], -1)], -1)
+        samples_grid: Tensor = torch.cat([src_tensor[0],torch.cat([samps for samps in samples], -1)], -1)
         samples_grid = (torch.clamp(samples_grid, -1., 1.) + 1.0)/2.0
-        pose_grid = torch.cat([torch.zeros_like(src[0]),torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
+        pose_grid: Tensor = torch.cat([torch.zeros_like(src_tensor[0]),torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
 
-        logger.debug("samples_grid: %s", samples_grid)
-        logger.debug("pose_grid: %s", pose_grid)
+        logger.info("samples_grid: { shape: %s, range: [%s, %s] }", 
+                     samples_grid.shape, samples_grid.min(), samples_grid.max())
+        logger.info("pose_grid: { shape: %s, range: [%s, %s] }", 
+                     pose_grid.shape, pose_grid.min(), pose_grid.max())
         
-        output = torch.cat([1-pose_grid, samples_grid], -2)
-        numpy_imgs = output.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()
-        fake_imgs = (255*numpy_imgs).astype(np.uint8)
+        output: Tensor = torch.cat([1-pose_grid, samples_grid], -2)
+        numpy_imgs: np.ndarray = output.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()
+        fake_imgs: np.ndarray = (255*numpy_imgs).astype(np.uint8)
         
-        logger.debug("output: %s", output)
-        logger.debug("numpy_imgs: %s", numpy_imgs)
-        logger.debug("fake_imgs: %s", fake_imgs)
+        logger.info("output: { shape: %s, range: [%s, %s] }", 
+                     output.shape, output.min(), output.max())
+        logger.info("numpy_imgs: { shape: %s, range: [%s, %s] }", 
+                     numpy_imgs.shape, numpy_imgs.min(), numpy_imgs.max())
+        logger.info("fake_imgs: { shape: %s, range: [%s, %s] }", 
+                     fake_imgs.shape, fake_imgs.min(), fake_imgs.max())
         
         output_image = Image.fromarray(fake_imgs[0])
         
