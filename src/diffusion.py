@@ -69,6 +69,10 @@ def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
                 xt = xt*mask + diffusion.q_sample(ref, t.long())*(1-mask)
             #xs.append(xt_next.to('cpu'))
 
+    logger.info("Returning DDIM results...")
+    logger.info("xt: %s", xt)
+    logger.info("x0_preds: %s", x0_preds)
+    
     return [xt], x0_preds
 
 
