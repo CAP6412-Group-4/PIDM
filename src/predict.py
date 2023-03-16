@@ -164,7 +164,8 @@ class Predictor():
         
         output_image = Image.fromarray(fake_imgs[0])
         
-        logger.debug("Generating Output Image with: %s", fake_imgs[0])
+        logger.info("Generating Output Image with fake_imgs[0]: { shape: %s, range: [%s, %s] }", 
+                    fake_imgs.shape[1:], fake_imgs.min(), fake_imgs.max())
         logger.debug("Output Image: %s", output)
         
         logger.info("Saving output image: 'output.png'")
