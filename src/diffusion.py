@@ -29,8 +29,12 @@ def compute_alpha(beta, t):
 
 def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
     
-    logger.debug("ddim_steps(x=%s, seq=%s, model=%s, b=%s, x_cond=%s, diffusion=%s)",
-                 x, seq, model, b, x_cond, diffusion)
+    logger.debug("ddim_steps(x={ shape: %s, range: [%s, %s] }, seq=%s, model=%s, b={ shape: %s, range: [%s, %s]}, x_cond=%s, diffusion=%s)",
+                 x.shape, x.min(), x.max(),  
+                 seq, type(model), 
+                 b.shape, b.min(), b.max, 
+                 len(x_cond), 
+                 diffusion)
     logger.info("Generating predicted values with DDIM steps..")
     
     x_cond[0] = [model.encode(x_cond[0])['cond'], model.encode(torch.zeros_like(x_cond[0]))['cond']]
