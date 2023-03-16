@@ -126,7 +126,8 @@ class Predictor():
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
-        logger.debug("Target Poses: %s", tgt_pose)
+        logger.info("Target Poses: { shape: %s, range: [%s, %s] }", 
+                    tgt_pose.shape, tgt_pose.min(), tgt_pose.max())
         
         src = src.repeat(num_poses, 1, 1, 1)
         logger.debug("src: %s", src)
