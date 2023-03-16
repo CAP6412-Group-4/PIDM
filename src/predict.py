@@ -31,7 +31,7 @@ NPY_FILES = paths.TARGET_POSE / "*.npy"
 
 
 def get_conf():
-
+    logger.info("Creating Beat GANs and Autoencoder config class...")
     return BeatGANsAutoencConfig(image_size=256, 
     in_channels=3+20, 
     model_channels=128, 

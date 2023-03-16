@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 
 import torch
@@ -7,6 +8,9 @@ from torch.nn.functional import silu
 from .latentnet import *
 from .unet import *
 from .choices import *
+
+logger = logging.getLogger(__name__)
+
 
 def prob_mask_like(shape, prob, device):
     if prob == 1:
@@ -29,6 +33,7 @@ class BeatGANsAutoencConfig(BeatGANsUNetConfig):
     latent_net_conf: MLPSkipNetConfig = None
 
     def make_model(self):
+        logger.info("Creating Beat GAN and Autoencoder model...")
         return BeatGANsAutoencModel(self)
 
 
