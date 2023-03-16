@@ -85,8 +85,8 @@ class Predictor():
         self.betas = conf.diffusion.beta_schedule.make()
         self.diffusion = create_gaussian_diffusion(self.betas, predict_xstart = False)#.to(device)
         
+        logger.info("Gathering all *.npy files with glob")
         self.pose_list = glob.glob(str(NPY_FILES))
-        
         logger.debug("pose_list: %s", self.pose_list)
         
         self.transforms = transforms.Compose([transforms.Resize((256,256), interpolation=Image.BICUBIC),
@@ -117,16 +117,18 @@ class Predictor():
         # Read the input image.
         src = Image.open(image)
         src = self.transforms(src).unsqueeze(0).cuda()
+        
+        # Randomly selects a number of poses from the pose_list. 
+        # The amount of poses selected is determined by the 'num_poses'
         tgt_pose = torch.stack(
             [transforms.ToTensor()(np.load(ps)).cuda() 
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
+        logger.debug("Selected Target Poses: %s", tgt_pose)
         
+        src = src.repeat(num_poses, 1, 1, 1)
         logger.debug("src: %s", src)
-        logger.debug("tgt_pose: %s", tgt_pose)
-
-        src = src.repeat(num_poses,1,1,1)
 
         if sample_algorithm == "ddpm":
             samples = self.diffusion.p_sample_loop(self.model, x_cond = [src, tgt_pose], progress = True, cond_scale = 2)
@@ -135,7 +137,6 @@ class Predictor():
             seq = range(0, 1000, 1000//nsteps)
             xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src, tgt_pose])
             samples = xs[-1].cuda()
-
 
         samples_grid = torch.cat([src[0],torch.cat([samps for samps in samples], -1)], -1)
         samples_grid = (torch.clamp(samples_grid, -1., 1.) + 1.0)/2.0
