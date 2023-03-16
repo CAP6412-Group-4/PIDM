@@ -109,7 +109,7 @@ class Predictor():
             nsteps (int, optional): _description_. Defaults to 100.
         """
 
-        logger.debug("predict_pose(image=%s, num_poses=%s, sample_algorithm=%s, nsteps=%s)",
+        logger.info("predict_pose(image=%s, num_poses=%s, sample_algorithm=%s, nsteps=%s)",
                      image, num_poses, sample_algorithm, nsteps)
         logger.info("Predicting %s poses for the image '%s' with the '%s' sample algorithm", 
                     num_poses, image, sample_algorithm)
@@ -120,12 +120,13 @@ class Predictor():
         
         # Randomly selects a number of poses from the pose_list. 
         # The amount of poses selected is determined by the 'num_poses'
+        # List of Tensors representing the 3D numpy arrays with values between [0, 1]
         tgt_pose = torch.stack(
             [transforms.ToTensor()(np.load(ps)).cuda() 
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
-        logger.debug("Selected Target Poses: %s", tgt_pose)
+        logger.debug("Target Poses: %s", tgt_pose)
         
         src = src.repeat(num_poses, 1, 1, 1)
         logger.debug("src: %s", src)
@@ -142,11 +143,24 @@ class Predictor():
         samples_grid = (torch.clamp(samples_grid, -1., 1.) + 1.0)/2.0
         pose_grid = torch.cat([torch.zeros_like(src[0]),torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
 
+        logger.debug("samples_grid: %s", samples_grid)
+        logger.debug("pose_grid: %s", pose_grid)
+        
         output = torch.cat([1-pose_grid, samples_grid], -2)
-
         numpy_imgs = output.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()
         fake_imgs = (255*numpy_imgs).astype(np.uint8)
-        Image.fromarray(fake_imgs[0]).save('output.png')
+        
+        logger.debug("output: %s", output)
+        logger.debug("numpy_imgs: %s", numpy_imgs)
+        logger.debug("fake_imgs: %s", fake_imgs)
+        
+        output_image = Image.fromarray(fake_imgs[0])
+        
+        logger.debug("Generating Output Image with: %s", fake_imgs[0])
+        logger.debug("Output Image: %s", output)
+        
+        logger.info("Saving output image: 'output.png'")
+        output_image.save('output.png')
 
 
     def predict_appearance(
