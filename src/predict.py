@@ -88,7 +88,7 @@ class Predictor():
         
         logger.info("Gathering all *.npy files with glob")
         self.pose_list = glob.glob(str(NPY_FILES))
-        logger.info("Number of Position References (*.npy): %s", self.pose_list.count())
+        logger.info("Number of Position References (*.npy): %s", len(self.pose_list))
         logger.debug("Snippet of pose_list: %s", self.pose_list[:5])
         
         self.transforms = transforms.Compose([transforms.Resize((256,256), interpolation=Image.BICUBIC),
