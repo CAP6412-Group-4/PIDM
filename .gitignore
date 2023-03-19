@@ -166,4 +166,5 @@ checkpoints/*
 # Any zip files that may be large.
 *.zip
 
+*.png
 
