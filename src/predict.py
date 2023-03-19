@@ -91,9 +91,15 @@ class Predictor():
         logger.info("Number of Position References (*.npy): %s", len(self.pose_list))
         logger.debug("Snippet of pose_list: %s", self.pose_list[:5])
         
-        self.transforms = transforms.Compose([transforms.Resize((256,256), interpolation=Image.BICUBIC),
-                            transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5),
-                                                (0.5, 0.5, 0.5))])
+        self.transforms = transforms.Compose(
+            [
+                transforms.Resize((256,256), interpolation=Image.BICUBIC), 
+                transforms.ToTensor(), 
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            ]
+        )
+        
+        logger.debug("Transform: %s", self.transforms)
         
         
     def predict_pose(self, 
@@ -143,12 +149,30 @@ class Predictor():
             xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src_tensor, tgt_pose])
             samples = xs[-1].cuda()
 
-        samples_grid: Tensor = torch.cat([src_tensor[0],torch.cat([samps for samps in samples], -1)], -1)
-        samples_grid = (torch.clamp(samples_grid, -1., 1.) + 1.0)/2.0
-        pose_grid: Tensor = torch.cat([torch.zeros_like(src_tensor[0]),torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
+        samples_grid: Tensor = torch.cat(
+            [
+                src_tensor[0], 
+                torch.cat([samps for samps in samples], -1)
+            ], 
+            -1
+        )
 
+        samples_grid = (torch.clamp(samples_grid, -1., 1.) + 1.0) / 2.0
+        
         logger.info("samples_grid: { shape: %s, range: [%s, %s] }", 
-                     samples_grid.shape, samples_grid.min(), samples_grid.max())
+                    samples_grid.shape, samples_grid.min(), samples_grid.max())
+        
+        pose_grid: Tensor = torch.cat([torch.zeros_like(src_tensor[0]), torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
+        
+        logger.debug("src_tensor[0]: { shape: %s, range: [%s, %s] }", 
+                     src_tensor[0].shape, src_tensor[0].min(), src_tensor[0].max())
+        
+        logger.debug("Target Pose Samples:")
+        for idx, samps in enumerate(tgt_pose):
+            logger.debug("> %s: { shape: %s, range:[%s, %s]}", 
+                         idx, samps[:3].shape, samps[:3].min(), samps[:3].max())
+
+
         logger.info("pose_grid: { shape: %s, range: [%s, %s] }", 
                      pose_grid.shape, pose_grid.min(), pose_grid.max())
         
