@@ -124,8 +124,11 @@ class Predictor():
 
         # Read the input image.
         src = Image.open(image)
+        
+        # (1 ,3, 256, 256)
         src_tensor: Tensor = self.transforms(src).unsqueeze(0).cuda()
         
+
         # Randomly selects a number of poses from the pose_list. 
         # The amount of poses selected is determined by the 'num_poses'
         # List of Tensors representing the 3D numpy arrays with values between [0, 1]
@@ -169,6 +172,9 @@ class Predictor():
         
         logger.debug("Target Pose Samples:")
         for idx, samps in enumerate(tgt_pose):
+            pose_image = Image.fromarray(samps[:3])
+            pose_image.save("pose_%s.png", idx)
+            
             logger.debug("> %s: { shape: %s, range:[%s, %s]}", 
                          idx, samps[:3].shape, samps[:3].min(), samps[:3].max())
 
