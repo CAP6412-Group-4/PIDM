@@ -172,7 +172,7 @@ class Predictor():
         
         logger.debug("Target Pose Samples:")
         for idx, samps in enumerate(tgt_pose):
-            pose_image = Image.fromarray(samps[:3])
+            pose_image = Image.fromarray(samps[:3].numpy())
             pose_image.save("./pose_%s.png", idx)
             
             logger.debug("> %s: { shape: %s, range:[%s, %s]}", 
