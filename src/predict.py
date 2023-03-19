@@ -172,7 +172,7 @@ class Predictor():
         
         logger.debug("Target Pose Samples:")
         for idx, samps in enumerate(tgt_pose):
-            logger.debug("Before: %S", samps[:3].shape)
+            logger.debug("Before: %s", samps[:3].shape)
             pot = torch.cat([1 - samps[:3]], -2)
             logger.debug("After: %s", pot.shape)
             Image.fromarray((255*pot.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()).astype(np.uint8)[0]).save(f"./pose_{idx}.png")
