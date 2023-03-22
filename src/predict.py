@@ -133,7 +133,7 @@ class Predictor():
         # The amount of poses selected is determined by the 'num_poses'
         # List of Tensors representing the 3D numpy arrays with values between [0, 1]
         tgt_pose = torch.stack(
-            [transforms.ToTensor()(np.load(ps)).cuda() 
+            [transforms.ToTensor()(np.load(ps)).cuda()[:3] 
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
