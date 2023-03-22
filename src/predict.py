@@ -133,7 +133,7 @@ class Predictor():
         # The amount of poses selected is determined by the 'num_poses'
         # List of Tensors representing the 3D numpy arrays with values between [0, 1]
         tgt_pose = torch.stack(
-            [transforms.ToTensor()(np.load("malformed.npy")).cuda() 
+            [transforms.ToTensor()(np.load("./data/deepfashion_256x256/target_pose/reference_pose_0.npy")).cuda() 
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
