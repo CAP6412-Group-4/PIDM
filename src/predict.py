@@ -128,12 +128,14 @@ class Predictor():
         # (1 ,3, 256, 256)
         src_tensor: Tensor = self.transforms(src).unsqueeze(0).cuda()
         
-
+        
+        # (256, 256, 20)
+        
         # Randomly selects a number of poses from the pose_list. 
         # The amount of poses selected is determined by the 'num_poses'
         # List of Tensors representing the 3D numpy arrays with values between [0, 1]
         tgt_pose = torch.stack(
-            [transforms.ToTensor()(np.load("./data/deepfashion_256x256/target_pose/reference_pose_0.npy")).cuda() 
+            [transforms.ToTensor()(np.load(ps)).cuda() 
              for ps in np.random.choice(self.pose_list, num_poses)], 
             0
         )
@@ -149,6 +151,7 @@ class Predictor():
         elif sample_algorithm == "ddim":
             noise = torch.randn(src_tensor.shape).cuda()
             seq = range(0, 1000, 1000//nsteps)
+            # (256, 256, 20)
             xs, x0_preds = ddim_steps(noise, seq, self.model, self.betas.cuda(), [src_tensor, tgt_pose])
             samples = xs[-1].cuda()
 
@@ -164,6 +167,7 @@ class Predictor():
         
         logger.info("samples_grid: { shape: %s, range: [%s, %s] }", 
                     samples_grid.shape, samples_grid.min(), samples_grid.max())
+        
         
         pose_grid: Tensor = torch.cat([torch.zeros_like(src_tensor[0]), torch.cat([samps[:3] for samps in tgt_pose], -1)], -1)
         
