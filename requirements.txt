@@ -2,3 +2,5 @@ torchvision
 notebook
 opencv-python
 numpy
+matplotlib
+
