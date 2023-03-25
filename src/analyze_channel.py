@@ -71,7 +71,7 @@ def main(pose: int) -> int:
 
         pose_npy = load_npy(npy_path=paths.TARGET_POSE / reference_pose)
 
-        save_pose(reference_pose, pose_npy)
+        save_pose(reference_pose_dir, pose_npy)
         output_joint(reference_pose_dir, pose_npy, pose)
 
     except Exception as ex:
