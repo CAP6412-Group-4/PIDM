@@ -48,8 +48,6 @@ def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
         xs = [x]
         xt = x
 
-        logger.error(x_cond[:2][1].shape)
-
         for i, j in tqdm.tqdm(zip(reversed(seq), reversed(seq_next))):
             t = (torch.ones(n) * i).to(x.device)
             next_t = (torch.ones(n) * j).to(x.device)
