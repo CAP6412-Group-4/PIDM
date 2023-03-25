@@ -28,8 +28,12 @@ ZIP_FILE = paths.BASE_DIR / "checkpoints_data.zip"
 
 
 def download_dataset() -> None:
-    """"""
+    """Downloads the zip file from the google drive."""
+
+    # Checks dirs
     if not (paths.DATA_DIR.is_dir() and paths.CHECKPOINTS_DIR.is_dir()):
+        logger.info("Downloading dataset from Google Drive: %s", DATASET_URL)
+        
         if paths.DATA_DIR.is_dir():
             paths.DATA_DIR.unlink()
             
@@ -42,12 +46,13 @@ def download_dataset() -> None:
         ZIP_FILE.unlink()
 
 
-def main(image_path: str) -> int:
+def main(image_path: str, algorithm: str, steps: int, num_poses: int, debug: bool = False) -> int:
     """
     Main script for running the pose generator
 
     Args:
         image_path (str): Image to use for pose generation.
+        debug: Flag for displaying debug logs
 
     Returns:
         int: Exit code
@@ -56,14 +61,16 @@ def main(image_path: str) -> int:
     exit_code = 0
     
     try:
-        initialize_logger(log_path=PIDM_LOG_PATH)
+        initialize_logger(log_path=PIDM_LOG_PATH, debug=debug)
         logger.info("Start of PIDM pose generation")
         
         download_dataset()
         
         predictor = Predictor()
         
-        predictor.predict_pose(image=image_path, sample_algorithm="ddim", num_poses=4, nsteps=50)
+        predictor.predict_pose(
+            image=image_path, sample_algorithm=algorithm, num_poses=num_poses, nsteps=steps
+        )
     except Exception as ex:
         exit_code = 1
         logger.exception(ex)
@@ -78,7 +85,23 @@ if __name__ == "__main__":
     
     parser.add_argument("-i", "--image-path", required=False, default=str(PERSON_JPEG_PATH),
                         help="Path to image to use for pose generation.")
+    parser.add_argument("-a", "--algorithm", required=False, default="ddim",
+                        help="Can use either 'ddim' or 'ddpm'")
+    parser.add_argument("-s", "--steps", required=False, default=50,
+                        help="Number of steps")
+    parser.add_argument("-p", "--num-poses", required=False, default=4, 
+                        help="Number of random poses to generate")
+
+    parser.add_argument("-d", "--debug", required=False, default=False, action="store_true",
+                        help="Flag for also displaying DEBUG logs. "
+                        "This would output more detailed logs.")
     
     args, _ = parser.parse_known_args()
     
-    sys.exit(main(image_path=args.image_path))
+    sys.exit(main(
+        image_path=args.image_path, 
+        algorithm=args.algorithm,
+        steps=args.steps,
+        num_poses=args.num_poses,
+        debug=args.debug
+    ))

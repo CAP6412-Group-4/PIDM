@@ -4,6 +4,7 @@ https://github.com/hojonathanho/diffusion/blob/1e0dceb3b3495bbe19116a5e1b3596cd0
 Docstrings have been added, as well as DDIM sampling and a new collection of beta schedules.
 """
 
+import logging
 import enum
 import math
 
@@ -17,6 +18,9 @@ from types import *
 import torch
 import tqdm
 
+logger = logging.getLogger(__name__)
+
+
 def compute_alpha(beta, t):
     beta = torch.cat([torch.zeros(1).to(beta.device), beta], dim=0)
     a = (1 - beta).cumprod(dim=0).index_select(0, t + 1).view(-1, 1, 1, 1)
@@ -24,6 +28,15 @@ def compute_alpha(beta, t):
 
 
 def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
+    
+    logger.debug("ddim_steps(x={ shape: %s, range: [%s, %s] }, seq=%s, model=%s, b={ shape: %s, range: [%s, %s]}, x_cond=%s, diffusion=%s)",
+                 x.shape, x.min(), x.max(),  
+                 seq, type(model), 
+                 b.shape, b.min(), b.max, 
+                 len(x_cond), 
+                 diffusion)
+    logger.info("Generating predicted values with DDIM steps..")
+    
     x_cond[0] = [model.encode(x_cond[0])['cond'], model.encode(torch.zeros_like(x_cond[0]))['cond']]
 
     x_cond[0][0] = [torch.stack([i*feat[0] + (1-i)*feat[-1] for i in torch.linspace(0,1,len(feat))], 0) for feat in x_cond[0][0]]
@@ -34,6 +47,7 @@ def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
         x0_preds = []
         xs = [x]
         xt = x
+
         for i, j in tqdm.tqdm(zip(reversed(seq), reversed(seq_next))):
             t = (torch.ones(n) * i).to(x.device)
             next_t = (torch.ones(n) * j).to(x.device)
@@ -56,6 +70,10 @@ def ddim_steps(x, seq, model, b, x_cond, diffusion = None, **kwargs):
                 xt = xt*mask + diffusion.q_sample(ref, t.long())*(1-mask)
             #xs.append(xt_next.to('cpu'))
 
+    logger.info("Returning DDIM results...")
+    logger.info("xt: { shape: %s, range: [%s, %s]}", xt.shape, xt.min(), xt.max())
+    logger.info("x0_preds: %s", x0_preds)
+    
     return [xt], x0_preds
 
 
@@ -501,6 +519,9 @@ class GaussianDiffusion:
         :param progress: if True, show a tqdm progress bar.
         :return: a non-differentiable batch of samples.
         """
+        
+        logger.info("Generating samples from the model...")
+        
         shape = x_cond[0].shape
         final = None
         x_cond[0] = [model.encode(x_cond[0])['cond'], model.encode(torch.zeros_like(x_cond[0]))['cond']]
@@ -563,6 +584,8 @@ class GaussianDiffusion:
             from tqdm.auto import tqdm
 
             indices = tqdm(indices)
+
+        logger.error(x_cond[:2])
 
         for i in indices:
             t = th.tensor([i] * shape[0], device=device)

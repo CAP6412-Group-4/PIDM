@@ -2,3 +2,6 @@ torchvision
 notebook
 opencv-python
 numpy
+matplotlib
+tqdm
+tensorfn
