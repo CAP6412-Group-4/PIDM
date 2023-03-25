@@ -26,6 +26,7 @@ ANALYSIS_LOG = paths.BASE_DIR / "logs" / "analysis.log"
 def load_npy(npy_path):
     return np.load(str(npy_path))
 
+
 def output_channels(pose_npy) -> None:
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
@@ -36,6 +37,11 @@ def output_channels(pose_npy) -> None:
                 print(f"{col} ", end="")
             print()
 
+def output_joint(pose, pose_npy):
+    tensor = transforms.ToTensor()(pose_npy).cuda()
+
+    for idx, point in enumerate(tensor):
+        print(point.shape)
 
 def main(pose: int) -> int:
     
@@ -45,7 +51,8 @@ def main(pose: int) -> int:
         logger.info("Outputting Reference Pose: %s", pose)
 
         pose_npy = load_npy(npy_path=paths.TARGET_POSE / reference_pose)
-        output_channels(pose_npy=pose_npy)
+        output_joint(pose, pose_npy)
+
     except Exception as ex:
         logger.exception(ex)
     
