@@ -14,6 +14,7 @@ sys.path.append(str(Path().parent))
 
 import numpy as np
 import torchvision.transforms as transforms
+from PIL import Image
 
 from src import paths
 from src.log.log import initialize_logger
@@ -41,8 +42,9 @@ def output_joint(pose, pose_npy):
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
     for idx, point in enumerate(tensor):
-        rgb_pose = point * 255
-        print(rgb_pose)
+        rgb_pose = np.array(point * 255)
+        Image.fromarray(rgb_pose).save(f"point_{20}.png")
+
 
 def main(pose: int) -> int:
     
