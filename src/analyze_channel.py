@@ -42,7 +42,7 @@ def output_joint(pose, pose_npy):
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
     for idx, point in enumerate(tensor):
-        rgb_pose = (255 * point)
+        rgb_pose = (255 * point).cpu().detach().numpy()
         print(type(rgb_pose))
         print(rgb_pose.shape)
 
