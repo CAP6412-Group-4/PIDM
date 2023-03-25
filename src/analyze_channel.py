@@ -43,6 +43,8 @@ def output_joint(dest, pose_npy):
     # (20, 256, 256)
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
+    dest.mkdir(exist_ok=True)
+
     for idx, point in enumerate(tensor):
         # point = 1 - point
         rgb_pose = (255 * point).cpu().detach().numpy()
@@ -51,12 +53,13 @@ def output_joint(dest, pose_npy):
         if img.mode != "RGB":
             img = img.convert("RGB")
 
-        dest.mkdir(exist_ok=True)
         img.save(str(dest / f"point_{idx}.png"))
 
 def save_pose(dest, pose_npy):
     tensor = transforms.ToTensor()(pose_npy).cuda()
     
+    dest.mkdir(exist_ok=True)
+
     pose = torch.cat([1 - tensor[:3]], -2)
     pose_arr = (255*pose.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()).astype(np.uint8)[0]
     Image.fromarray(pose_arr).save(str(dest / "pose.png"))
