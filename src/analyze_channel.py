@@ -43,8 +43,6 @@ def output_joint(dest, pose_npy):
     # (20, 256, 256)
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
-    dest.mkdir(exist_ok=True)
-
     for idx, point in enumerate(tensor):
         # point = 1 - point
         rgb_pose = (255 * point).cpu().detach().numpy()
@@ -57,8 +55,6 @@ def output_joint(dest, pose_npy):
 
 def save_pose(dest, pose_npy):
     tensor = transforms.ToTensor()(pose_npy).cuda()
-    
-    dest.mkdir(exist_ok=True)
 
     pose = torch.cat([1 - tensor[:3]], -2)
     pose_arr = (255*pose.unsqueeze(0).permute(0,2,3,1).detach().cpu().numpy()).astype(np.uint8)[0]
@@ -69,6 +65,9 @@ def main(pose: int) -> int:
     try:
         reference_pose = f"reference_pose_{pose}.npy"
         reference_pose_dir = paths.BASE_DIR / f"reference_pose_{pose}"
+        logger.error(reference_pose_dir)
+
+        reference_pose_dir.mkdir(exist_ok=True)
 
         logger.info("Outputting Reference Pose: %s", pose)
 
