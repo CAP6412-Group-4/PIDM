@@ -42,9 +42,8 @@ def output_joint(pose, pose_npy):
     tensor = transforms.ToTensor()(pose_npy).cuda()
 
     for idx, point in enumerate(tensor):
-        rgb_pose = np.array(point * 255)
-        Image.fromarray(rgb_pose).save(f"point_{20}.png")
-
+        rgb_pose = (255 * point.unsqueeze(0).permute(0, 2, 3, 1).detach().cpu().numpy()).astype(np.uint8)[0]
+        print(rgb_pose)
 
 def main(pose: int) -> int:
     
