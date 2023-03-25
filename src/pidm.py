@@ -29,6 +29,8 @@ ZIP_FILE = paths.BASE_DIR / "checkpoints_data.zip"
 
 def download_dataset() -> None:
     """Downloads the zip file from the google drive."""
+
+    # Checks dirs
     if not (paths.DATA_DIR.is_dir() and paths.CHECKPOINTS_DIR.is_dir()):
         logger.info("Downloading dataset from Google Drive: %s", DATASET_URL)
         
