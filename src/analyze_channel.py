@@ -65,7 +65,6 @@ def main(pose: int) -> int:
     try:
         reference_pose = f"reference_pose_{pose}.npy"
         reference_pose_dir = paths.BASE_DIR / f"reference_pose_{pose}"
-        logger.error(reference_pose_dir)
 
         reference_pose_dir.mkdir(exist_ok=True)
 
