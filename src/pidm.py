@@ -75,7 +75,7 @@ def main(image_path: str, algorithm: str, steps: int, num_poses: int, debug: boo
         exit_code = 1
         logger.exception(ex)
     finally:
-        logger.info("End of PIDM pose generattion: %s", exit_code)    
+        logger.info("End of PIDM pose generation: %s", exit_code)    
     
     return exit_code
 
