@@ -43,7 +43,8 @@ def output_joint(pose, pose_npy):
 
     for idx, point in enumerate(tensor):
         rgb_pose = (255 * point).cpu().detach().numpy()
-        Image.fromarray(rgb_pose).save(f"point_{idx}.png")
+        img = Image.fromarray(rgb_pose).convert("RGB")
+        img.save(f"point_{idx}.png")
 
 def main(pose: int) -> int:
     
